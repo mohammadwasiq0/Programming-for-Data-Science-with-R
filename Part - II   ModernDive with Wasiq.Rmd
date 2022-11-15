@@ -1,0 +1,1034 @@
+---
+title: "DSM -1005 Programming for Data Science with - R -II"
+author: "Mohammad Wasiq"
+date: "05/02/2022"
+output: html_document
+---
+
+We follow the book named **Statistical Inference via Data Science** *A ModernDive into R and the Tidyvers* by **Chester Ismay** and **Albert Y. Kim**
+
+Teacher : **Prof. Athar Ali Khan Sir** 
+
+Coder : **Mohammad Wasiq** , $MS(Data \quad Science)$
+
+# R programing fo Data Science - II
+In this Script we learn the R programing for Data Science at intermediate level .
+<br> We learn the following Packages
+
+1.  __Tidyverse__ 
+
+* **Data Visualization** Using **ggplot2**
+
+* **Data Wrangling** Using **dplyr**
+
+* **Data Importing** & **Tidy Data**
+
+2. __Data Modelling__ with **moderndive**
+
+* **Simple Regression**
+
+* **Multiple Regression**
+
+3. __Statistical Inference__ with **infer**
+
+* **Sampling**
+
+* **Confidence Intervals**
+
+* **Hypothesis Testing**
+
+* **Inference for Regression**
+
+4. __Conclusion__
+
+* **Exploratory Data Analysis**
+
+* **Statistics**
+
+**Note** Here we are Discussing Only 2nd Chapter , which includes only **Simple Regression** and **Multiple Regression** . Rest is on other script .
+
+# Data Modelling with `moderndive`
+# Basic Regression /  Linear Regression 
+* **Linear Models:** Summarising the data in the forms of equation is known as Linear Models.
+* **Regression Analysis**: Regression Analysis is a simple method for ivestigation relationship among variables. 
+<br>**Linear regression** is one of the most commonly-used and easy-to-understand approaches to modeling.
+<br>Linear regression involves a *numerical* outcome variable $y$ and explanatory variables $x$ that are either *numerical* or *categorical*.
+
+## Simple Linear Regression / SLR -- Theory
+Model :- $y = \beta_0 + \beta_1x_1 +\epsilon$
+<br>where , $y$ is `Response variable / Outcome of Study / Dependent Variable`
+<br> $\beta_0$ is `Intercept`
+<br>$\beta_1$ is `Slope` i.e. $\frac{\Delta y}{\Delta x}$
+<br>$x_1$ is `Explanatory variable / Predictor / Regressor / Independent Variable` 
+<br>$\epsilon$ is `Error`
+
+1. **Response Variable$(y)$:** A response variable measures an outcome of a study.
+2. **Explanatory Variable$(x)$:** Explanatory variable explains or cause change in the response variable.
+<br>Ex- Beer Drinking and Blood Alcohol Level.
+<br>How does drinking beer affect the level of alcohol in our blood.
+<br>Model: Blood Alcohol Level(y)=$\beta_0(intercept)+\beta_1(slope)*Beer- Drink(x)+\epsilon$
+3. **Slope$(\beta_1)$:** $\beta_1=\frac{\Delta y}{\Delta x}$ is slope, the amount by which $y$ changes, when $x$ changes by one unit.
+<br>The slope is an important numerical description of the relationship b/w two variables.
+<br>Ex- $Weight=\hat{\beta_0}+\hat{\beta_1}Age$ $\Rightarrow$ Weight(kg) =3+0.2 Age(yrs)
+<br>*Interpretation*- If age changes by one unit(i.e. 1 year) then weight changes by 0.2 kg.
+4. **Intercept$(\beta_0)$:** $\beta_0$ is the intercept , the value of $y$ when $x=0$.
+Prediction: we can use a regression line to predict the response $y$ for a specific value of the explanatory variable $x$.
+5. **Residual:* Observed(y) - Predict(y) $\Rightarrow (y-\hat{y})$
+
+6. **Assumption of Linear Model**
+<br>* **Linear in Parameter:** The model (A) is linear in the parameters $\beta_0$ & $\beta_1$.
+<br>* **Random Sampling:** We have a random sample of n observation i.e. we draw samples from the population by simple random sampling method .
+<br>* **Normality:** The error will follow normal distribution with $mean=0$ & $variance=\sigma^2$ i.e. X~ $N(0,\sigma^2)$
+<br>* **Homoscedasticity:** The error has the same variance given any values of the explanatory variables. i.e. Variance is constant at every value x. $\Rightarrow V(e|x_1,x_2....x_n)=\sigma^2$
+<br>* **No Perfect Multicollinearity/No Auto Correlation:** In the Model(A), there is no perfect linear relationship b/w regression.(That's why we call $x$ is independent variable) i.e. $Cov(e_i,e_j)=0$
+
+7. **Some Other Definition**:-
+<br> * **Error:** Error of the dataset is the difference b/w the observed value and the unobserved value.
+<br> * **Residuals:** Residual is calculated after running the regression model and is the difference b/w observed value and the estimated value.
+$e_i= (y_i-\hat{y_i})=y_i-(\hat{\beta_0}+\hat{\beta_1}x)$
+<br> * **Sum of Squares:** Sum of squares is one of the most important output in regression analysis.
+<br>The general rule is that a smaller sum of squares indicate a better model,as there is less variation in the data.
+<br> * **Coefficient of Determination / $R^2-Value$** It can be noted that a fitted model can be said to be good model when residuals are small for the measure of Goodness of Model, we use the following formula:
+<br>$R^2=\frac{SSR}{SST}=1-\frac{SS_{res}}{SST}$ , this is called, the coefficient of determination.
+<br>The ratio $\frac{SSR}{SST}$ describe the proportion of variability i.e. explained by the regression in relation to the total varialbility of $y$ .
+<br>The ratio $\frac{SS_{res}}{SST}$ describe the proportion of variability that is not explained by the regression.
+<br>The value of $R^2$ lies $0 \le R^2 \le 1$.
+<br>$R^2=0$, indicates that poorest fit of the model.
+<br>$R^2=1$, indicates that best fit of the model.
+<br>$R^2=0.95$, indicates that 95% of the variation in $y$ is explained by $R^2$. In simple words, the model is 95% good .
+<br>Drawbacks of $R^2$- As $R^2$ always increase with an increase in the no. of explanatory vaiables in the model.The main drawback of this property is that even when the irrelevant explanatory variables. are odded in the model, $R^2$ still increases.
+This indicates that the model is getting better, which is not really correct.
+With a purpose of correction in the overly optimstic picture ,Adjusted $R^2$, denoted by $R_{adj}^2$ is used , which is defined as:
+<br>$R_{adj}^2=1-\frac{SS_{res}/(n-k-1)}{SST/(n-1)}$ OR $R_{adj}^2=1-\frac{SS_{res}}{SST} \times \frac{(n-1)}{(n-k-1)}$ OR <br>$R_{adj}^2=1-\frac{n-1}{n-k-1}(1-R^2)$
+
+8. **Types of Sum of Square**:-
+<br>(i).*Total Sum of Square(SST)*: $\sum_{i=1}^n(y_i-\bar{y})^2$ where $y_i$=value in a sample and $\bar{y}$=mean value of the sample
+<br>(ii). *Regression Sum of Square(SSR)*: $\sum_{i=1}^n(\hat{y_i}-\bar{y})^2$ , where $\hat{y_i}$=value estimated by regression line. and $\bar{y}$=Mean value of the sample.
+<br>$SSR \propto \frac{1}{fitting-of-model}$
+<br>(iii). *Residual Sum of Square(SSres)*: $SS_{res}=\sum_{i=1}^n (y_i-\hat{y_i})^2$ ,where $y_i$=Observed Value and $\hat{y_i}$=Estimated by regression line
+<br>$SS_{res} \propto \frac{1}{Explanation-of-Data}$
+<br>$SST=SSR+SS_{res}$
+
+9. Hypothesis of SLR:
+<br> * **Null Hypothesis** $H_0:\beta_0=\beta_{00}$
+<br> * **Alternative Hypothesis** $H_1:\beta_0\neq \beta_{00}$
+
+**Purpose of Data Modeling**
+
+* **Modeling for Explanation :** When you want to explicitly describe and quantify the relationship between the outcome variable $y$ and a set of explanatory variables $x$, determine the significance of any relationships, have measures summarizing these relationships, and possibly identify any causal relationships between the variables.
+
+* **Modeling for prediction:** When you want to predict an outcome variable $y$ based on the information contained in a set of predictor variables $x$. Unlike modeling for explanation, however, you don’t care so much about understanding how all the variables relate and interact with one another, but rather only whether you can make good predictions about $y$ using the information in $x$.
+
+**Exp.-** We are interested in an outcome variable $y$ of whether patient develop *lung cancer* and information $x$ on their risk factors , such as *smoking habits , age* and *socioeconomics* status. One reason could be that we want to design an intervention to reduce lung cancer incidence in a population, such as targeting smokers of a specific age group with advertising for smoking cessation programs. If we are modeling for prediction, however, we wouldn’t care so much about understanding how all the individual risk factors contribute to lung cancer, but rather only whether we can make good predictions of which people will contract lung cancer.
+
+## One Numerical Explanatory Variable :
+### Exploratory Data Analysis (EDA)
+**Exploratory Data Analysis (EDA)** is an approach to analyze the data using visual techniques. It is used to discover trends, patterns, or ti check assumptions with the help of statistical summary and graphical representations. 
+
+A crucial step before doing any kind of analysis or modeling is performing an exploratory data analysis, or EDA for short. EDA gives you a sense of the distributions of the individual variables in your data, whether any potential relationships exist between variables, whether there are outliers and/or missing values, and (most importantly) how to build your model. Here are three
+common steps in an EDA:
+
+* Most crucially, looking at the raw data values.
+
+* Computing summary statistics, such as means, medians, and interquartile ranges.
+
+* Creating data visualizations.
+
+**About Data `evals`**
+<br>The data on the 463 courses at UT Austin can be found in the evals data frame included in the moderndive package. 
+
+* **ID:** An identification variable used to distinguish between the 1 through 463 courses in the dataset.
+
+* **score:** A numerical variable of the course instructor’s average teaching score, where the average is computed from the evaluation scores from all students in that course. Teaching scores of 1 are lowest and 5 are highest. This is the outcome variable 𝑦 of interest.
+
+* **bty_avg:** A numerical variable of the course instructor’s average “beauty” score, where the average is computed from a separate panel of six students. “Beauty” scores of 1 are lowest and 10 are highest.
+<br>This is the explanatory variable 𝑥 of interest.
+
+* Link : *https://www.openintro.org/stat/data/?data=evals*
+
+* **age:** A numerical variable of the course instructor’s age. This will be another explanatory variable 𝑥 that we’ll use in the Learning check at the end of this subsection.
+
+$I^{st}$ **step of EDA - Looking the Data** .
+```{r , warning=FALSE}
+# Load the require library
+library(tidyverse)
+library(moderndive)
+library(skimr)
+library(gapminder)
+
+# Load the evals data
+data("evals")
+
+# dimension of data
+dim(evals)
+
+# Names of Columns of data evals
+names(evals)
+
+# View and Head of Data 
+# View(evals)
+head(evals)
+```
+
+**Task :** Select the columns *ID , score , bty_avg , age* from the data *evals* and named *evals_ch5)*.
+```{r}
+evals_ch5 <- evals %>%
+  select(ID , score , bty_avg , age)
+
+# View(evals_ch5)
+glimpse(evals_ch5)
+```
+
+**Sample of size 5 from evals_ch5**
+```{r}
+evals_ch5 %>%
+  sample_n(size = 5)
+```
+
+$II^{nd}$ **Step of EDA - Statistical Summary**
+
+**Task :** Find the *mean* and *median* of *bty_avg* and *score* variables of *evals_ch5* subdata . 
+```{r}
+evals_ch5 %>%
+  summarise(
+    mean_bty_avg = mean(bty_avg) ,
+    median_bty_avg = median(bty_avg) ,
+    mean_score = mean(score) ,
+    median_score = median(score))
+```
+
+In above summary we get only *mean* and *median* only , not all the summary . <br>If we want to get all summary , then our code is very long and time consuming . Instead to write a long code we use **skim()** command of *skimr* package .
+
+```{r}
+evals_ch5 %>%
+  select(bty_avg , score) %>%
+  skim()
+```
+
+**Note :** The *skim()* function only returns what are known as univariate summary statistics: functions that take a single variable and return some numerical summary of that variable .
+
+A *correlation coefficient* is a quantitative expression of the *strength* of the linear relationship between two numerical variables. It lies between -1 to 1. Value closer to 0 means weak linearity and closer to -1 or 1 means strong linearity.
+
+**Task :** Find correlation coefficient between score and bty_avg .
+```{r}
+evals_ch5 %>%
+  get_correlation(formula = score ~ bty_avg) # get_correlation is from moderndive pkg.
+```
+
+Another way to find correlation coeff.
+```{r}
+round(evals_ch5 %>%
+  summarise(correlation = cor(score , bty_avg)) , 2)
+```
+
+In our case, the correlation coefficient **0.187** indicates that the relationship between teaching evaluation score and “beauty” average is *“weakly positive”* .
+
+$III^{rd}$ **Step of EDA - Graphically Presentation**
+
+**Task :** Make a *scatter plot* 
+```{r}
+ggplot(evals_ch5, aes(bty_avg , score)) +
+  geom_point() +
+  labs(x = "Beauty Score" , y = "Teaching Score" , title = "Scatter Plot" , subtitle = "Relationship of Teaching and Beauty Scores")
+```
+
+The relationship between "Teaching Score" and “Beauty Score" is “weakly positive.” This is consistent with our earlier computed correlation coefficient of **0.187** .
+<br>This plot suffers from overplotting.
+
+**Task :** To avoid *Overplotting* , make a **Jitter plot** .
+```{r}
+ggplot(evals_ch5, aes(bty_avg , score)) +
+  geom_jitter() +
+  labs(x = "Beauty Score" , y = "Teaching Score" , title = "Jitter Plot" , subtitle = "Relationship of Teaching and Beauty Scores")
+```
+
+**Task :** Make a **Scatter plot** with *Regression line* .
+```{r}
+ggplot(evals_ch5, aes(bty_avg , score)) +
+  geom_point() + geom_smooth(method = "lm" , se = F) +
+  labs(x = "Beauty Score" , y = "Teaching Score" , title = "Scatter Plot with Regression Line" , subtitle = "Relationship of Teaching and Beauty Scores")
+```
+
+The *regression line* is a visual summary of the relationship between two numerical variables. A regression line is *“best-fitting”* in that it minimizes some mathematical criteria.
+
+### Simple Linear Regression
+**Our Model :** $score  = \beta_0 + \beta_1(bty \_ avg) + \epsilon$
+
+* We first “fit” the linear regression model using the **lm()** function and save it in score_model.
+
+* We get the regression table by applying the **get_regression_table()** function from the *moderndive* package to score_model.
+```{r}
+# Fit Regression Model :
+score_model <- lm(score ~ bty_avg , data = evals_ch5)
+
+# Regression Table :
+get_regression_table(score_model)
+```
+
+**Estimated Model:** $\widehat{score} = \beta_0 + \beta_{bty \_ avg}(bty\_avg)$
+<br>**Fitted Model :** $\widehat{score} = 3.88 + 0.067(bty\_avg)$
+<br>**Interpretation :**  For every increase of 1 unit in bty_avg, there is an associated increase of, on average, **0.067** units of score .
+
+**To get the Summary of our Model**
+```{r}
+# Summary of Regression Model :
+get_regression_summaries(score_model)
+```
+
+The value of $R^2 = 0.035$ that means only **3.5%** of variability is explained . **OR**
+<br>Ou Model Is only **3.5%** Good .
+
+### Observed / Fitted Values and Residuals
+**Residuals:** Residual is calculated after running the regression model and is the difference b/w observed value and the estimated value.
+$e_i= (y_i-\hat{y_i})=y_i-(\hat{\beta_0}+\hat{\beta_1}x)$
+
+We get the residuals using **get_regression_points(model)** 
+```{r}
+residual <- get_regression_points(score_model)
+
+residual[c(1:5,24,200) ,]
+```
+
+* The *score* column represents the observed outcome variable $y$. This is the y-position of the 463 black points.
+*  The *bty_avg* column represents the values of the explanatory variable $x$. This is the x-position of the 463 black points.
+*  The *score_hat* column represents the fitted values $\hat{y}$. This is the corresponding  value on the regression line for the 463$x$𝑥 values.
+* The *residual* column represents the residuals $y-\hat{y}$. This is the 463 vertical distances between the 463 black points and the regression line.
+
+Now we talk about 24th value .
+
+* **score = 4.4** is the observed teaching score 𝑦 for this course’s instructor.
+* **bty_avg = 5.50** is the value of the explanatory variable bty_avg 𝑥 for this course’s instructor.
+* **score_hat = 4.25 = 3.88 + 0.067 ⋅ 5.5** is the fitted valu e$\hat{y}$ on the regression line for this course’s instructor.
+* **residual = 0.153 = 4.4 - 4.25** is the value of the residual for this instructor.
+<br>In other words, the model’s fitted value was off by 0.153 teaching score units for this course’s instructor.
+
+### EDA with Age & Score
+**Task LC(5.1 : 5:3) -:** Conduct a new *Exploratory Data Analysis* with the same outcome variable $y$ being **score** but with **age** as the new explanatory variable .
+
+**EDA I - Looking the Data**
+```{r , warning=FALSE}
+# Load the require library
+library(tidyverse)
+library(moderndive)
+library(skimr)
+library(gapminder)
+
+# Load the evals data
+data("evals")
+```
+
+**Select the Require Data**
+```{r}
+ev_age <- evals %>%
+  select(ID , score , age)
+# View(ev_age)
+
+glimpse(ev_age)
+```
+
+**Sample of size 5 from ev_age**
+```{r}
+ev_age %>%
+  sample_n(size = 5)
+```
+
+**EDA II - Statistical Summary**
+```{r}
+ev_age %>%
+  select(score , age) %>%
+  skim()
+```
+
+**Correlation Coefficient**
+```{r}
+round(ev_age %>%
+  get_correlation(formula = score ~ age) , 2)
+```
+
+*Another way to find correlation coeff.*
+```{r}
+round(ev_age %>%
+  summarise(Correlation = cor(score , age)) , 2)
+```
+
+In our case , the correlation coefficient **-0.11** indicates that the relationship b/w *Score* and *Age* is *weakly negative* .
+
+**EDA III - Graphically Presentation**
+```{r}
+ggplot(ev_age , aes(age , score)) + 
+  geom_point() + 
+  geom_smooth(method = "lm" , se = F) +
+  labs(x = "Age" , y = "Teaching Score" , title = "Scattr Plot with Regression Line")
+```
+
+The relationship between "Teaching Score" and "Age“ is “weakly positive.” This is consistent with our earlier computed correlation coefficient of **0.187** .
+
+**Simple Linear Regression**
+
+**Our Model :** $Score = \beta_0 + \beta_{Age}(Age) + \epsilon$
+```{r}
+# Fit Regression Model :
+age_model <- lm(score ~ age , data = ev_age)
+
+# Regression Table :
+get_regression_table(age_model)
+```
+
+**Estimated Model :** $\widehat{score} = \beta_0 + \beta_{Age}(Age)$
+
+**Fitted Model :** $\widehat{Score} = 4.46 - 0.006(Age)$
+
+**Interpretation :**  For every increase of **1** unit in *Age*, there is an associated decrease of, on average, **0.006** units of score .
+
+**Summary of Our Model**
+```{r}
+get_regression_summaries(age_model)
+```
+
+The value of $R^2 = 0.01$ , that means only **1%** of variability is explained . **OR**
+<br>Our Model is only **1%** Good.
+
+**Observed / Fitted Values & Residuals**
+```{r}
+residual <- get_regression_points(age_model)
+
+residual[c(1:4 , 25, 220) , ]
+```
+
+## One Categorical Explanatory Variable 
+**About Gapminder Data**
+<br>The data on the 142 countries can be found in the gapminder data frame included in the gapminder package.
+1. A numerical outcome variable $y$ (a country’s life expectancy) 
+2. A single categorical explanatory variable $x$ (the continent that the country is a part of).
+
+### Exploratory Data Analysis
+**Task :** Filter *countary , lifeExp , Continent , gdpPercap* of year *2007* from *gapmider* data.
+```{r , warning=FALSE}
+library(tidyverse)
+library(gapminder)
+data("gapminder")
+dim(gapminder)
+names(gapminder)
+
+gap7 <- gapminder %>%
+  filter(year == 2007) %>%
+  select(country , lifeExp , continent , gdpPercap) 
+
+# View(gap7)  
+glimpse(gap7)
+```
+
+**Sample of size 5 from gap7**
+```{r}
+gap7 %>%
+  sample_n(size = 5)
+```
+
+**Task :** *Get the summary of lifeExp and continent*
+
+**Summary of gap7**
+```{r}
+gap7 %>%
+  select(lifeExp , continent) %>%
+  skim()
+```
+
+**Graphically Presentation of gap7**
+
+**Task :** Make a **Histogram**
+```{r}
+ggplot(gap7 , aes(x = lifeExp)) +
+  geom_histogram(binwidth = 5 , col = "white" , fill = "steelblue") +
+  labs(x = "Life Expectancy" , y = "No. of Countries" , title = "Histogram" , subtitle = "Distribution of Worldwide Life Expectancies")
+```
+
+We see that this data is left-skewed, also known as negatively skewed: there are a few countries with low life expectancy that are bringing down the mean life expectancy. However, the median is less sensitive to the effects of such outliers; hence, the median is greater than the mean in this case. i.e. $M_e < M_d$
+
+```{r}
+ggplot(gap7 , aes(x = lifeExp)) +
+  geom_histogram(binwidth = 5 , col = "white" , fill = "steelblue") +
+  facet_wrap(~ continent , nrow = 2) +
+  labs(x = "Life Expectancy" , y = "No. of Countries" , title = "Histogram" , subtitle = "Distribution of Worldwide Life Expectancies")
+```
+
+Observe that unfortunately the distribution of African life expectancies is much lower than the other continents, while in Europe life expectancies tend to be higher and furthermore do not vary as much. On the other hand, both Asia and Africa have the most variation in life expectancies. There is the least variation in Oceania, but keep in mind that there are only two countries in Oceania: Australia and New Zealand.
+
+Some people prefer comparing the distributions of a numerical variable between different levels of a categorical variable using a boxplot instead of a faceted histogram. This is because we can make quick comparisons between the categorical variable’s levels with imaginary horizontal lines.
+
+**Task :** Make **Boxplot**
+```{r}
+ggplot(gap7 , aes(x = continent , y = lifeExp)) + 
+  geom_boxplot(fill = "steelblue") +
+  labs(x = "Continent" , y = "Life Expectancy" , title = "Boxplot" , subtitle = "Life Expectancy by Continent")
+```
+
+**Task :** Compute the median and mean life expectancy for each continent .
+```{r}
+gap7 %>%
+  group_by(continent) %>%
+  summarise(
+    Median = median(lifeExp) ,
+    Mean = mean(lifeExp)
+            )
+```
+
+### Simple Linear Regression
+**Our Model :** $Life\_Exp. = \beta_0 + \beta_{cont.}(Continent) + \epsilon$ 
+
+```{r}
+# Fit the Model :
+le_model <- lm(lifeExp ~ continent , data = gap7)
+
+# Regression Table :
+get_regression_table(le_model)
+```
+
+**Fitted Model :**
+$$\widehat{Life\_Exp.} = 54.8 + 18.8(Americas) + 15.9(Asia) + 22.8(Europe) + 25.9(Oceania)$$
+
+**Interpretation :**
+
+* For every increase of 1 unit in *Americas* there is an associated increase of, on average, **18.8** units of *Life Expectation* .
+
+* For every increase of 1 unit in *Asia* there is an associated increase of, on average, **15.9** units of *Life Expectation* .
+
+* For every increase of 1 unit in *Europe* there is an associated increase of, on average, **22.8** units of *Life Expectation* .
+
+* For every increase of 1 unit in *Oceania* there is an associated increase of, on average, **25.9** units of *Life Expectation* .
+
+### Observed / Fitted Values & Residuals
+
+```{r}
+rp <- get_regression_points(le_model, ID = "country")
+
+View(rp)
+```
+
+**LC(5.6) :** Iidentify the five countries with the five smallest (most negative) residuals .
+```{r}
+rp %>%
+  top_n(n = -5 , wt = residual)
+
+# Arrange in Ascending Order because above command arrange by country
+
+rp %>%
+  top_n(n = -5 , wt = residual)%>%
+  arrange(residual)
+```
+
+The residual for Afghanistan is $− 26.900$ and it is the smallest residual. This means that the average life expectancy of Afghanistan is 26.900 years lower than the average life expectancy of its continent, Asia.
+  
+**LC(5.7) :** Identify the five countries with the five largest (most posiitve) residuals .
+
+```{r}
+rp %>%
+  top_n(n = 5 , wt = residual)
+
+# Arrange Residuals in Descending Order because above command arrange by country
+
+rp %>%
+  top_n(n = 5 , wt = residual) %>%
+  arrange(desc(residual))
+```
+
+The residual for Reunion is $21.636$ and it is the largest residual. This means that the average life expectancy of Reunion is 21.636 years higher than the average life expectancy of its continent, Africa.
+
+
+### EDA with Continent & GDP
+Conduct exploratory data analysis as done above with *x=continent, y=gdpPercap* from the same dataset **gapmider**.
+
+**EDA I - Select the Data**
+
+**Task :** Filter countary , lifeExp , Continent , gdpPercap of year 2007 from gapmider data
+
+```{r , warning=F}
+# Load require libraries 
+library(tidyverse)
+library(moderndive)
+library(skimr)
+library(gapminder)
+
+# Load the require dataset "gapminder"
+data("gapminder")
+
+# Filtering and Selecting the Data
+gap7 <- gapminder %>%
+  filter(year == 2007) %>%
+  select(country , continent , gdpPercap)
+
+# Sample of size n from above Data 
+gap7 %>%
+  sample_n(size = 5)
+```
+
+**EDA II - Summary of Data**
+
+**Task :** Find the summary of gdpPerCap
+```{r}
+
+gap7 %>%
+  select(continent ,gdpPercap) %>%
+  skim()
+```
+
+**EDA III - Graphically Representation of Data**
+
+**Task :** Make Boxplot 
+```{r}
+ggplot(gap7, aes(x = continent , y = gdpPercap)) + 
+  geom_boxplot()
+               
+# Customized Boxplot               
+ggplot(gap7, aes(x = continent , y = gdpPercap)) + 
+  geom_boxplot(fill = c("red" , "steelblue ", "orange" , "green" , "yellow")) +
+  facet_wrap(~ continent) +
+  labs(x = "GDP per Capita" , y = "No. of countries" , title = "Boxplot" , subtitle = "Distribution of Worldwide GDP per Capita")
+```
+
+**Task :** Fit the Simple Linear Model**
+
+**Model :** $GDP = \beta_0 + \beta_{cont.}(Continent) + \epsilo$
+```{r}
+gdp_model <- lm(gdpPercap ~ continent , data = gap7)
+
+get_regression_table(gdp_model)
+```
+
+**Fitted Model :**
+$$\widehat{GDP} = 3089.03 + 7913.14(Americas) + 9383.99(Asia) + 21965.45(Europe) + 26721.16(Oceania)$$
+**Interpretation**
+
+* For every increase of 1 unit in *Americas* there is an associated increase of, on average, **7913.14** units of *GDP per Capita* .
+
+* For every increase of 1 unit in *Asia* there is an associated increase of, on average, **9383.99** units of *GDP per Capita* .
+
+* For every increase of 1 unit in *Europe* there is an associated increase of, on average, **21965.45** units of *GDP per Capita* .
+
+* For every increase of 1 unit in *Oceania* there is an associated increase of, on average, **26721.16** units of *GDP per Capita* .
+
+**Summary of Model :**
+```{r}
+get_regression_summaries(gdp_model)
+```
+
+The value of $R^2=0.42$ , which indicates that ou model is **42%** good .
+
+
+**Observed and Residuals of our Model :**
+```{r}
+rp <- get_regression_points(gdp_model) ; head(rp)
+```
+
+**Task :** Iidentify the five countries with the five smallest (most negative) residuals .
+```{r}
+rp %>%
+  top_n(n = -5 , wt = residual)%>%
+  arrange(residual)
+```
+
+**Task :** Iidentify the five countries with the five largest (most positive) residuals .
+```{r}
+rp %>%
+  top_n(n = 5 , wt = residual)%>%
+  arrange(desc(residual))
+```
+
+# Multiple Regression
+## Multiple Linear Regression / MLR - Theory
+**(Multiple Linear Regression Analysis)**
+<br>The basic difference between simple and multiple regression is that in simple there is only one predictor $x$, whereas in multiple regression it must be $2$ or $more$. We shall write a function to implement multiple regression analysis with $2$ regressors or covariates.
+
+1. **Model:** The Multiple Linear Regression Model is denoted as:
+$y_i=\beta_0+\beta_1x_1+\beta_2x_2 \cdots \beta_ix_{ip}+\epsilon$
+where, $y$ is the response vaiable , $\beta_1+\beta_2 + \cdots + \beta_i$ is regression coefficient and $x_1+x_2+ \cdots + x_{ip}$ are predictors.
+
+2. **Regressiom Coefficient:** Change in response y per unit change in regressor x.
+
+3. **Formulas for Calculation**
+$$(y,X,\beta,\sigma^2,I)$$
+
+It is to be noted that $y$ is the vector of responses, X is termed as model matrix and $\beta$ iis known as vector of regression coefficients.However, $\sigma^2$ is known as residual variance, $I$ stands for indentity matrix of order $n \times n$ .
+
+The method of least square is used to estimate $\beta$ . This method states that we will close that value of $\beta$ which will minimize error sum of squares defined as : $errorSS=e^Te=(y-X\beta)^T(y-X\beta)$ and the result is solution normal equations defined as: $(X^TX)\hat{\beta}=X^Ty$ alternatively least square estimate of $\beta$ is defined as: $\hat{\beta}=(X^TX)^{-1}(X^Ty)$
+
+This implies that variance covariance matrix of $\hat{\beta}$ is : $Var(\hat{\beta})=\sigma^2(X^TX)^{-1}$ and its estimate is $\widehat{Var(\hat{\beta})}=\hat{\sigma^2}(X^TX)^{-1}$
+
+The diagonal elements of this matrix are variances and non-diagonal elements are co-variances, Thus standard error of $\beta$ is $SE(\hat{\beta})=\sqrt{diag(\widehat{Var(\hat{\beta})})}$ where $\hat{\sigma^2}=\frac{ResidSS}{n-(p+1)}=MSresidual$ where, $ResidSS=(y-X\hat{\beta})^T(y-X\hat{\beta})$
+
+4. **Sum of Squares -**
+<br>* **_Total Sum of Square:_** $SST=Y^TY-n\bar{Y}^2$ with degree of freedom $n-1$
+<br>* **_Regression Sum of Square:_** $SS_{res}= \hat{\beta}^TX^TY-n\bar{X}^2$ with degree of freedom k
+<br>* **_Residual Sum of Square:_** $SSR= Y^TY\hat{\beta}^TX^TY$ with degree of freedom n-k-1
+
+5. **Hypothesis of SLR:**
+
+Null Hypothesis $H_0:\beta_1=\beta_2=\cdots= \beta_i = \cdots = \beta_{k}=0$
+
+Alternative Hypothesis $H_1$: At least one $\beta_i's \neq 0 \quad ; i = 1,2,...,k$
+
+## One Numerical & One Categorical Explanatory Variable
+Here we are discussing about the data  *evals* .
+
+### EDA 
+
+```{r , warning=FALSE}
+# Load the require library
+library(tidyverse)
+library(moderndive)
+library(skimr)
+library(ISLR)
+
+# Data 
+data("evals")
+```
+
+**Task :** Select the columns *ID, score, age , gender* from the data **evals** 
+
+$I^{st}$ step **Look at the Data** .
+```{r}
+# Select te require data
+evals_ch6 <- evals %>%
+  select(ID , score , age , gender)
+
+# Take the sample of size 5 from above data
+evals_ch6 %>%
+  sample_n(size = 5)
+```
+
+$II^{nd}$ Step -- **Summarizing the Data**
+```{r}
+evals_ch6 %>%
+  select(score , age , gender) %>%
+  skim()
+```
+
+**Task :** Correlation Coefficient between the *score* and *age* .
+```{r}
+evals_ch6 %>%
+  get_correlation(formula = score ~ age)
+```
+
+$III^{rd}$ Step -- **Graphically Representation** 
+
+**Task :** Make a **Scatter Plot** between *score* and score and fill by *gender* .
+```{r}
+ggplot(evals_ch6 , aes(age , score , col = gender)) + 
+  geom_point() +
+  geom_smooth(method = "lm" , se = F) +
+  labs(x = "Age" , y = "Teaching Score" , title = "Scatter Plot" , subtitle = "Relation b/w Age & Score by Gender")
+```
+
+Female instructors are paying a harsher penalty for advanced age than the male instructors .
+
+### Regression Model
+
+$$Score = \beta_0 + \beta_1(Age*Gender) + \epsilon$$
+$$\Rightarrow\quad Score = \beta_0 + \beta_{Age}(Age) + \beta_{Male}(M) + \beta_{GM}(Age\_Male) + \epsilon$$
+
+```{r}
+# Fit the Model :
+score_model <- lm(score ~ age*gender , data = evals_ch6)
+
+# Regression Table :
+get_regression_table(score_model)
+```
+
+**Our Model :** $\widehat{Score} = 4.88 -0.018(Age) -0.446(Male) + 0.014(Age\_Male)$
+
+**Task : Accuracy of Model**
+```{r}
+get_regression_summaries(score_model)
+```
+
+The value of $R^2 = 0.051$  , that means that our Model is only *5%* Good .
+
+**Task : Observed / Fitted Values / Residuals**
+```{r}
+get_regression_points(score_model) -> rp ; head(rp)
+```
+
+**Task : Top 5 +ve Residuals**
+```{r}
+rp %>%
+  top_n(5 , residual) %>%
+  arrange(desc(residual))
+```
+
+**Task : Top 5 -ve Residuals**
+```{r}
+rp %>%
+  top_n(-5 , residual) %>%
+  arrange(residual)
+```
+
+**(LC6.1) :** Compute the observed values, fitted values, and residuals not for the interaction model as we just did, but rather for the parallel slopes model we saved in score_model_parallel_slopes.
+
+**Model :** $Slope = \beta_0 + \beta_{Age}(Age) + \beta_{Gender}(Gender)+ \epsilon$
+```{r}
+score_model <- lm(score ~ age + gender , data = evals_ch6)
+get_regression_table(score_model)
+
+regression_points_parallel <- get_regression_points(score_model)
+  
+head(regression_points_parallel)
+```
+
+## Two Numerical Explanatory Variable
+
+Here we use **Credit** dataset from **ISLR** package.
+
+```{r}
+# Call the Data
+data("Credit")
+dim(Credit)
+names(Credit)
+# View(Credit)
+```
+
+**EDA**
+
+**Task :** Select the columns named *ID , Balance , Limit , Income , Rating , Age* and assign them new names as *ID , debt , credit_limit , income , credit_rating , age* repesctively .
+
+$I^{st}$ Step -- **Looking at Data** 
+```{r}
+credit_ch6 <- Credit %>%
+  as_tibble() %>%
+  select(ID , debt = Balance , credit_limit = Limit , income = Income , credit_rating = Rating , age = Age)
+
+glimpse(credit_ch6)
+
+# Sample of 5 obs.
+credit_ch6 %>%
+  sample_n(5)
+```
+
+$II^{nd}$ Step -- **Summary of debt , credit_limit , income**
+```{r}
+credit_ch6 %>%
+  select(debt , credit_limit , income) %>%
+  skim()
+```
+
+**Correlation* b/w *debt , credit_limit , income*
+```{r}
+credit_ch6 %>%
+  select(debt , credit_limit , income) %>%
+  cor()
+```
+
+**Graphical Presentation**
+```{r , warning=FALSE}
+# Divide the screen into 2 parts
+library(cowplot)
+
+# Make a Scatterplot for credit limit and debt
+p1 <- ggplot(credit_ch6 , aes(credit_limit , debt)) + 
+  geom_point() + 
+  labs(x = "Credit limit (in $)", y = "Credit card debt (in $)",
+title = "Debt and credit limit")+
+  geom_smooth(methos = "lm" , se = F) 
+
+# Make a Scatter plot for income and debt
+p2 <- ggplot(credit_ch6, aes(x = income, y = debt)) +
+  geom_point() +
+  labs(x = "Income (in $1000)", y = "Credit card debt (in $)",
+title = "Debt and income") +
+  geom_smooth(method = "lm", se = FALSE)
+
+# Plotting the Both Graphs in a row
+plot_grid(p1, p2)
+```
+
+**Regression Models**
+
+**Model :** $Debt = \beta_0 + \beta_{CL}(Credit\_Limit) + \beta_{Income}(Income) + \epsilon$
+
+```{r}
+# Fit regression model:
+debt_model <- lm(debt ~ credit_limit + income, data = credit_ch6)
+
+# Get regression table:
+get_regression_table(debt_model)
+```
+
+$\widehat{Debt} = -385.18 + 0.26(Credit\_Limit) -7.66(Income)$
+
+**Accuracy :**
+```{r}
+debt_model %>%
+  get_regression_summaries()
+```
+
+The value of $R^2 = 0.871$ , which means that Our Model is **87%** is Good/Fitted.
+
+**Observed / Fitted Values** & **Residuals**
+```{r}
+rp <- debt_model %>%
+  get_regression_points()
+head(rp)
+```
+
+**Top 5 +ve Residuals**
+```{r}
+rp %>%
+  top_n(5 , residual) %>%
+  arrange(desc(residual))
+```
+
+### EDA for Credit_Rating & Age
+
+**(LC 6.2) :** Conduct a new exploratory data analysis with the same outcome variable $y$ being *debt* but with *credit_rating* and *age* as the new explanatory variables $x_1$ and $x_2$ . 
+
+**Looking at Data :**
+```{r}
+credit_ch6 %>%
+  select(debt, credit_rating, age) %>%
+  head()
+```
+
+**Summary of Data**
+```{r}
+credit_ch6 %>%
+  select(debt, credit_rating, age) %>%
+  skim()
+```
+
+```{r}
+credit_ch6 %>%
+  select(debt , credit_limit , income) %>%
+  cor()
+```
+
+**Graphically Representation**
+```{r}
+# Scatter Plot for Credit Rating and Debt
+p1 <- ggplot(credit_ch6, aes(x = credit_rating, y = debt)) +
+  geom_point() +
+  labs(x = "Credit rating", y = "Credit card debt (in $)",
+    title = "Debt and credit rating") +
+  geom_smooth(method = "lm", se = FALSE)
+
+# Scatter Plot for Age and Debt
+p2 <- ggplot(credit_ch6, aes(x = age, y = debt)) +
+  geom_point() +
+  labs(x = "Age (in year)", y = "Credit card debt (in $)",
+    title = "Debt and age") +
+  geom_smooth(method = "lm", se = FALSE)
+
+plot_grid(p1 , p2)
+```
+
+**Regression Analysis**
+**Model :** $Debt = \beta_0 + \beta_{CR}(Credit\_Rating) + \beta_{Age}(Age) + \epsilon$
+
+```{r}
+# Fit regression model:
+debt_model_2 <- lm(debt ~ credit_rating + age, data = credit_ch6)
+
+# Get regression table:
+get_regression_table(debt_model_2)
+```
+
+**Fitted Model :** $Debt = -269.6 + 2.6(Credit\_Rating) -2.4(Age)$
+
+**Accuracy of Model :**
+```{r}
+debt_model_2 %>%
+  get_regression_summaries()
+```
+
+The value of $R^2 = 0.754$ , which means that Our Model is **75%** is Good/Fitted.
+
+**Observed / Fitted Values** & **Residuals**
+```{r}
+debt_model_2 %>%
+  get_regression_points() %>%
+  head()
+```
+
+**Top 5 -ve Residuals**
+```{r}
+debt_model_2 %>%
+  get_regression_points() %>%
+  top_n(-5 , residual) %>%
+  arrange(residual)
+```
+
+### EDA for MA_school Data
+
+**Looking at Data :**
+```{r}
+data("MA_schools")
+dim(MA_schools)
+names(MA_schools)
+
+MA_schools %>%
+  head()
+```
+
+**Summary of Data :**
+```{r}
+MA_schools %>%
+  skim()
+
+# Correlation of Data
+MA_schools %>%
+  select(average_sat_math , perc_disadvan) %>%
+  cor()
+```
+
+**Graphs**
+```{r}
+# Interaction model
+p1 <- ggplot(MA_schools, aes(x = perc_disadvan, y = average_sat_math, color = size)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Percent economically disadvantaged", y = "Math SAT Score", color = "School size", title = "Interaction model")
+
+# Parallel slopes model
+p2 <- ggplot(MA_schools, aes(x = perc_disadvan, y = average_sat_math, color = size)) +
+  geom_point(alpha = 0.25) +
+  geom_parallel_slopes(se = FALSE) +
+  labs(x = "Percent economically disadvantaged", y = "Math SAT Score", color = "School size", title = "Parallel slopes model")
+
+# Plot Both Graphs
+plot_grid(p1 , p2)
+```
+
+**Regression Analysis**
+
+**Model :** $ASM = \beta_0 + beta_1(PD*Size) + \epsilon$
+```{r}
+# Fit the Model :
+model_2_interaction <- lm(average_sat_math ~ perc_disadvan * size,
+data = MA_schools)
+
+# Model Table :
+get_regression_table(model_2_interaction)
+```
+
+**Accuracy of Model**
+```{r}
+model_2_interaction %>%
+  get_regression_summaries()
+```
+
+The value of $R^2 = 6.99$ , means that our model is **70%** Good / Fitted .
+
+**Observed / Fitted Values** and **Residuals**
+```{r}
+model_2_interaction %>%
+  get_regression_points() %>%
+  head()
+```
+
+**Top 5 +ve Residuals**
+```{r}
+model_2_interaction %>%
+  get_regression_points() %>%
+  top_n(5 , residual) %>%
+  arrange(desc(residual))
+```
+
+**Next Part is on Another File**
+

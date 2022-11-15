@@ -1,0 +1,541 @@
+---
+title: "Programming for Data Science with R - IV -- DSM-1005"
+author: "Mohammad Wasiq"
+date: "12/02/2022"
+output: html_document
+---
+
+We follow the book named **Statistical Inference via Data Science** *A ModernDive into R and the Tidyvers* by **Chester Ismay** and **Albert Y. Kim**
+
+Teacher : **Prof. Athar Ali Khan Sir** 
+
+Writer : **Mohammad Wasiq** , *MS(Data Science)*
+
+# R programing fo Data Science DSM-1005
+In this Script we learn the R programming for Data Science at intermediate level .
+<br> We learn the following Packages
+
+1.  __Tidyverse__ 
+
+* **Data Visualization** Using **ggplot2**
+
+* **Data Wrangling** Using **dplyr**
+
+* **Data Importing** & **Tidy Data**
+
+2. __Data Modelling__ with **moderndive**
+
+* **Simple Regression**
+
+* **Multiple Regression**
+
+3. __Statistical Inference__ with **infer**
+
+* **Sampling**
+
+* **Confidence Intervals**
+
+* **Hypothesis Testing**
+
+* **Inference for Regression**
+
+4. __Conclusion__
+
+* **Exploratory Data Analysis**
+
+* **Statistics**
+
+**Note** Here we are Discussing Only **Inference for Regression** from *Unit- 3* and **EDA** from *Unit-4* . 
+<br> All the above *Topics / Units* , we have already discused in $Part -I^{st} , II^{nd} , III^{rd}$ respctively . 
+
+# Infer for Regression 
+**Note:** This is the additional part of **Part - II**
+
+**Task :** Load the require packages go this chapter .
+```{r , warning=FALSE}
+library(tidyverse)
+library(moderndive)
+library(infer)
+```
+
+**Task :** Select the variable *ID , score , bty_avg , age* fom *evals* data .
+```{r}
+evals_ch5 <- evals %>%
+  select(ID , score , bty_avg , age)
+
+evals_ch5 %>% glimpse()
+```
+
+**Task :** Make a Scatter Plot between bty_avg ,  score .
+```{r}
+ggplot(evals_ch5 , aes(bty_avg , score)) +
+  geom_point() + 
+  geom_smooth(method = "lm" , se = F) +
+  labs(
+    x = "Beauty Score" ,
+    y = "Teaching Score" ,
+    title = "Scatter Plot" ,
+    subtitle = "Relationship b/w Teaching & Beauty Score"
+    )
+```
+
+**Task :** Fit the Linear Model
+
+**Model :** $Score = \beta_0 + \beta_{bty\_avg}(bty\_avg) + \epsilon$
+```{r}
+# Fit Regression Model :
+score_model <- lm(score ~ bty_avg , data = evals_ch5)
+
+# Regression Model
+get_regression_table(score_model)
+```
+
+**Fitted Model :** $\widehat{Score} = 3.88 + 0.067(bty\_avg)$
+<br> **Interpretation :** 
+<br> **Estimate :** If *Beauty Average* is increase by *1* unit than *Score* increases by *0.067* unit .
+<br> **Standard Error :** We can expect about 0.016 units of variation in the bty_avg slope variable .
+<br> **Our Hypotheses :** $H_0 : \beta_1 = 0 \quad vs \quad H_A : \beta_1 \neq 0$ . 
+<br> **P-Value :** The *p-value* in this case is 0, for any choice of significance level $\alpha$ we would reject $H_0$ in favor of $H_A$ . **OR** In other word , we can say that *we reject the hypothesis that there is no relationsip b/w teaching and beauty score*.  
+
+**Confidence Interval :** The resulting *95%* confidence interval for $\beta_1$ of **(0.035, 0.099)** can be thought of as a range of possible values for the population slope $\beta_1$ of the linear relationship between teaching and “beauty” scores.
+
+## Conditions for Inference for Regression
+The first four letters of these conditions are **LINE** .
+<br> 1. **L**inearity of relationship between variables
+<br> 2. **I**ndependence of the residuals
+<br> 3. **N**ormality of the residuals
+<br> 4. **E**quality of variance of the residuals
+
+Conditions **L, N** , and **E** can be verified through what is known as a residual analysis. Condition I can only be verified through an understanding of how the data was collected .
+
+### Residuals Refreshers 
+The *observed value* minus the *fitted value* denoted by $(y-\hat{y})$ .
+```{r}
+# Fit regression model:
+score_model <- lm(score ~ bty_avg, data = evals_ch5)
+
+# Get regression points:
+regression_points <- get_regression_points(score_model)
+
+regression_points %>% head()
+```
+
+A residual analysis is used to verify conditions **L, N, E** and can be performed using appropriate data visualizations .
+
+#### Linearity of Relationship 
+The first condition is that the relationship b/w the outcome variable $y$ and the explanatory variable $x$ must be **Linear* .
+```{r}
+ggplot(evals_ch5 , aes(bty_avg , score)) +
+  geom_point() +
+  geom_smooth(method = "lm" , se = F) +
+  labs(
+    x = "Beauty Score" ,
+    y = "Teaching Score" ,
+    title = "Scatter Plot" ,
+    subtitle = "Relationship b/w Teaching & Beauty Score"
+    )
+```
+
+In the figure we can easily see that there is a non-linear relationship . 
+```{r}
+get_correlation(evals_ch5 , formula = score ~ bty_avg)
+```
+
+There is only **0.187** correlation .
+
+#### Independence of Residuals
+The second condition is that the residuals must be **I**ndependent. In other words, the different observations in our data must be independent of one another.
+```{r}
+evals %>%
+  select(ID , prof_ID , score , bty_avg) %>%
+  head()
+```
+
+The professor with prof_ID equal to 1 taught the first 4 courses in the data, the professor with prof_ID equal to 2 taught the next 3, and so on. Given that the same professor taught these first four courses, it is reasonable to expect that these four teaching scores are related to each other. If a professor gets a high score in one class, chances are fairly good they’ll get a high score in another. 
+<br> The first four courses taught by professor 1 are dependent, the next 3 courses taught by professor 2 are related, and so on. Any proper analysis of this data needs to take into account that we have repeated measures for the same profs .
+
+#### Normality of Residuals
+The third condition is that the residuals should follow a **N**ormal distribution.
+<br> The center of this distribution should be $0$. In other words, sometimes the regression model will make positive errors: $(y-\hat{y})>0$ . Other times, the regression model will make equally negative errors: $(y-\hat{y})<0$ 
+
+The simplest way to check the normality of the residuals is to look at a **Histogram** .
+```{r}
+ggplot(regression_points, aes(x = residual)) +
+  geom_histogram(binwidth = 0.25 , col = "white" , fill = "steelblue") +
+  labs(x = "Residual" ,
+    title = "Histogram of Residual")
+```
+
+This *Histogram* shows that we have more positive residuals than negative. Since the residual $(y-\hat{y})$ is positive when $y>\hat{y}$, it seems our regression model’s fitted teaching scores $\hat{y}$ tend to underestimate the true teaching scores $y$. Furthermore, this *histogram* has a slight left-skew in that there is a tail on the left. This is another way to say the residuals exhibit a negative skew.
+
+#### Equality of Variance
+The fourth and final condition is that the residuals should exhibit **E**qual variance across all values of the explanatory variable $x$. In other words, the value and spread of the residuals should not depend on the value of the explanatory variable $x$ .
+```{r}
+ggplot(regression_points, aes(x = bty_avg, y = residual)) +
+  geom_point() +
+  labs(x = "Beauty Score", y = "Residual") +
+  geom_hline(yintercept = 0, col = "blue", size = 1)
+```
+
+How the spread of the residuals increases as the value of 𝑥 increases. This is a situation known as heteroskedasticity .
+
+**(LC 10.1)** Continuing with our regression using age as the explanatory variable and teaching score as the outcome variable.
+<br> Use the get_regression_points() function to get the observed values, fitted values, and residuals for all 463 instructors.
+```{r}
+evals_ch5 <- evals %>%
+  select(ID, score, bty_avg, age)
+
+# Fit regression model:
+score_age_model <- lm(score ~ age, data = evals_ch5)
+
+# Get regression points:
+regression_points <- get_regression_points(score_age_model)
+
+regression_points %>% head()
+
+ggplot(regression_points, aes(x = residual)) +
+  geom_histogram(binwidth = 0.25 , col = "white" , fill = "steelblue") +
+  labs(x = "Residual" ,
+    title = "Histogram of Residual")
+
+ggplot(regression_points, aes(x = age, y = residual)) +
+  geom_point() +
+  labs(x = "Age", y = "Residual" , title = "Histogram b/w Age & residual") +
+  geom_hline(yintercept = 0, col = "blue", size = 1)
+```
+
+#### Simulation Based Inference for Regression
+
+**Confidence Interval for Slope**
+```{r}
+bootstrap_distn_slope <- evals_ch5 %>%
+  specify(formula = score ~ bty_avg) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "slope")
+
+bootstrap_distn_slope %>% glimpse()
+
+# Visualize
+visualize(bootstrap_distn_slope)
+```
+
+**C.I. Percentile Method**
+```{r}
+percentile_ci <- bootstrap_distn_slope %>%
+  get_confidence_interval(type = "percentile", level = 0.95)
+
+percentile_ci
+```
+
+The resulting percentile-based 95% confidence interval for $\beta_1$ of *(0.032, 0.099)* is similar to the confidence interval in the regression .
+
+**CI Standard Error Method :**
+```{r}
+observed_slope <- evals %>%
+  specify(score ~ bty_avg) %>%
+  calculate(stat = "slope")
+
+observed_slope
+
+# CI by SE Method
+se_ci <- bootstrap_distn_slope %>%
+  get_ci(level = 0.95, type = "se", point_estimate = observed_slope)
+
+se_ci
+```
+
+The resulting standard error-based 95% confidence interval for $\beta_1$ of *(0.033, 0.1)* is slightly different than the confidence interval in the regression
+
+**Comparing all Three**
+```{r}
+visualize(bootstrap_distn_slope) +
+  shade_confidence_interval(endpoints = percentile_ci, fill = NULL, linetype = "solid", color = "red") +
+  shade_confidence_interval(endpoints = se_ci, fill = NULL,
+linetype = "dashed", color = "green") +
+  shade_confidence_interval(endpoints = c(0.035, 0.099), fill = NULL, linetype = "dotted", color = "black")
+```
+
+**Hypothesis Testing fo Slope**
+<br> $H_0:\beta_1=0 \quad vs \quad H_A:\beta_1 \neq0$
+<br>We construct the null distribution of the fitted slope $\beta_1$ by performing the steps that follow
+<br> 1. `specify()` the variables of interest in evals_ch5 with the formula: score ~ bty_avg.
+<br> 2. `hypothesize()` the null hypothesis of independence. <br> 3. `generate()` replicates by permuting/shuffling values from the original sample of 463 courses. We generate reps = 1000 replicates using type = "permute" here.
+<br> 4. `calculate()` the test statistic of interest: the fitted slope $\beta_1$
+
+```{r}
+# Then we calculate the "slope" coefficient for each of these 1000 generated samples .
+null_distn_slope <- evals %>%
+  specify(score ~ bty_avg) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000 , type = "permute") %>%
+  calculate(stat = "slope")
+
+visualize(null_distn_slope)
+
+# P-Vlaue
+null_distn_slope %>%
+  get_p_value(obs_stat = observed_slope , direction = "both")
+```
+
+P-Value is **0** , So we reject $H_0$ thus have evidence that suggests there is a significant relationship between teaching and “beauty” scores for all instructors at UT Austin.
+
+**(LC 10.3) :** Repeat the inference but this time for the correlation coefficient instead of the slope. Note the implementation of stat = "correlation" in the calculate() function of the infer package.
+```{r , warning=FALSE}
+bootstrap_distn_slope <- evals_ch5 %>%
+  specify(formula = score ~ bty_avg) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "correlation")
+
+bootstrap_distn_slope %>% head(5)  # dim = 1000 x 2
+
+set.seed(76)
+bootstrap_distn_slope <- evals %>%
+  specify(score ~ bty_avg) %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "slope")
+bootstrap_distn_slope %>% head(5)  # dim = 1000 x 2
+  
+observed_slope <- evals %>%
+  specify(score ~ bty_avg) %>%
+  calculate(stat = "correlation")
+
+observed_slope
+```
+
+# Conclusion of Book
+In this Part , we will discuss **Seattle House Prices**
+
+**About the Data :**
+<br> “House Sales in King County, USA”. It consists of sale prices of homes sold between May 2014 and May 2015 in King County, Washington, USA, which includes the greater Seattle metropolitan area. This dataset is in the house_prices data frame included in the moderndive package.
+<br> The dataset consists of 21,613 houses and 21 variables describing these houses (for a full list and description of these variables, see the help file by running ? house_prices in the console). In this case study, we’ll create a multiple regression model where:
+<br> The outcome variable $y$ is the sale price of houses.
+<br> Two explanatory variables:
+<br> i. A numerical explanatory variable $x_1$ : house size sqft_living as measured in square feet of living space. Note that 1 square foot is about 0.09 square meters.
+<br> ii.. A categorical explanatory variable $x_2$ : house condition, a categorical variable with five levels where 1 indicates “poor” and 5 indicates “excellent.”
+
+**Load the Require Libraries :**
+```{r , warning = FALSE}
+library(tidyverse)
+library(moderndive)
+library(skimr)
+library(fivethirtyeight)
+```
+
+## Explaratoy Data Analysis : Part - I
+**Univariate Data**
+<br> In this part we follow the following steps :
+<br> 1. Looking at the raw values .
+<br> 2. Computing summary statistics .
+<br> 3. Creating data visualization .
+
+```{r}
+# Load the Data
+data("house_prices")
+glimpse(house_prices)
+
+```
+
+```{r}
+# Summary of data
+house_prices %>%
+select(price, sqft_living, condition) %>%
+skim()
+```
+
+```{r}
+library(cowplot)
+
+# Histogram of house price:
+p1 <- ggplot(house_prices, aes(x = price)) +
+  geom_histogram(color = "white" , fill = "steelblue") +
+  labs(x = "price (USD)", title = "House price")
+
+p1
+
+# Histogram of sqft_living:
+p2 <- ggplot(house_prices, aes(x = sqft_living)) +
+  geom_histogram(color = "white" , fill = "red") +
+  labs(x = "living space (square feet)", title = "House size")
+
+p2
+
+# Barplot of condition:
+p3 <- ggplot(house_prices, aes(x = condition)) +
+  geom_bar(fill = "green") +
+  labs(x = "condition", title = "House condition")
+
+p3
+
+plot_grid(p1 , p2 , p3)
+```
+
+First, observe in the bottom plot that most houses are of condition “3”, with a few more of conditions “4” and “5”, and almost none that are “1” or “2”.
+
+Next, observe in the histogram for price in the top-left plot that a majority of houses are less than two million dollars. Observe also that the x-axis stretches out to 8 million dollars, even though there does not appear to be any houses close to that price. This is because there are a very small number of houses with prices closer to 8 million. These are the outlier house prices we mentioned earlier. We say that the variable price is right-skewed as exhibited by the long right tail.
+
+Further, observe in the histogram of sqft_living in the middle plot as well that most houses appear to have less than 5000 square feet of living space. For comparison, a football field in the US is about 57,600 square feet, whereas a standard soccer/association football field is about 64,000 square feet. Observe also that this variable is also right-skewed, although not as drastically as the price variable.
+
+For both the price and sqft_living variables, the right-skew makes distinguishing houses at the lower end of the x-axis hard. This is because the scale of the x-axis is compressed by the small number of quite expensive and immensely-sized houses.
+
+So what can we do about this skew? Let’s apply a log10 transformation to these variables.
+
+**Task :** Let’s create new log10 transformed versions of the right-skewed variable price and sqft_living using the mutate() function from Section 3.5, but we’ll give the latter the name log10_size, which is shorter and easier to understand than the name log10_sqft_living .
+```{r}
+house_prices_l <- house_prices %>%
+  mutate(
+    log10_price = log10(price),
+    log10_size = log10(sqft_living)
+    )
+
+
+house_prices_l %>% 
+  select(price, log10_price, sqft_living, log10_size) %>%
+  head(10)
+```
+
+**Task :** Let’s now visualize the before and after effects of this transformation for price.
+```{r}
+# Before log10 transformation:
+p1 <- ggplot(house_prices, aes(x = price)) +
+  geom_histogram(color = "white" , fill = "red") +
+  labs(x = "price (USD)", title = "House price: Before") ;p1
+
+# After log10 transformation:
+p2 <- ggplot(house_prices_l, aes(x = log10_price)) +
+  geom_histogram(color = "white" , fill = "steelblue") +
+  labs(x = "log10 price (USD)", title = "House price: After") ; p2
+
+plot_grid(p1 , p2)
+```
+
+Observe that after the transformation, the distribution is much less skewed, and in this case, more symmetric and more bell-shaped. 
+
+## Explaratoy Data Analysis : Part - II
+**Multivariate Data**
+
+**Visualization :**
+```{r}
+# Plot interaction model
+p1 <- ggplot(house_prices_l, 
+       aes(x = log10_size, y = log10_price, col = condition)) +
+  geom_point(alpha = 0.05) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(y = "log10 price", 
+       x = "log10 size", 
+       title = "House prices in Seattle")  ; p1
+
+# Plot parallel slopes model
+p2 <- ggplot(house_prices_l, 
+       aes(x = log10_size, y = log10_price, col = condition)) +
+  geom_point(alpha = 0.05) +
+  geom_parallel_slopes(se = FALSE) +
+  labs(y = "log10 price", 
+       x = "log10 size", 
+       title = "House prices in Seattle") ; p2
+
+plot_grid(p1 , p2)
+```
+
+```{r}
+ggplot(house_prices_l, 
+       aes(x = log10_size, y = log10_price, col = condition)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(y = "log10 price", 
+       x = "log10 size", 
+       title = "House prices in Seattle") +
+  facet_wrap(~ condition)
+```
+
+**Regression Analysis :**
+
+**Model :** $log10\_price = \beta_0 +\beta_1(log10\_size * condition) + \epsilon$
+<br> $log10\_price = \beta_0 +\beta_{size}\times log10(size) + \epsilon$ 
+```{r}
+# Fit regression model:
+price_interaction <- lm(log10_price ~ log10_size * condition,
+                        data = house_prices_l)
+
+# Get regression table:
+get_regression_table(price_interaction)
+
+```
+
+**Interpretation :**
+$$\widehat{log10\_price} = \hat{\beta_0} + \hat\beta_{size}}\times log10(size)$$ 
+
+1. Condition 1 :
+<br> $\widehat{log10\_price} = 3.33 + 0.69\times log10(size)$ 
+2. Condition 2 :
+<br> $\widehat{log10\_price} = 3.33 + (0.69-0.024)\times log10(size)= 0.666\times log10(size)$
+
+3. Condition 3 :
+<br> $\widehat{log10\_price} = 3.33 + (0.69+0.133)\times log10(size)= 0.823\times log10(size)$
+
+4. Condition 4 :
+<br> $\widehat{log10\_price} = 3.33 + (0.69+0.146)\times log10(size)= 0.836\times log10(size)$
+
+5. Condition 5 :
+<br> $\widehat{log10\_price} = 3.33 + (0.69+0.31)\times log10(size)= 1.0\times log10(size)$
+
+For homes of all five condition types, as the size of the house increases, the price increases. This is what most would expect. However, the rate of increase of price with size is fastest for the homes with conditions 3, 4, and 5 of 0.823, 0.836, and 1, respectively. These are the three largest slopes out of the five.
+
+**Making Predictions :**
+
+Say we’re a retailor and someone calls you asking you how much their home will sell for. They tell you that it’s in condition = 5 and is sized 1900 square feet. What do you tell them ? Let’s use the interaction model we fit to make predictions!
+
+We first make this prediction visually in Figure 11.8. The predicted log10_price of this house is marked with a black dot. This is where the following two lines intersect:
+
+The regression line for the condition = 5 homes and
+The vertical dashed black line at log10_size equals 3.28, since our predictor variable is the log10 transformed square feet of living space of  $log_{10}(1900)=3.28$
+
+```{r}
+# Without Facet
+ggplot(house_prices_l, aes(x = log10_size, y = log10_price, col = condition)) + 
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) + geom_vline(xintercept = 3.38 , col = "red" , tly = 2)  +
+  labs(y = "log10 price" ,
+       x = "log10 size",
+       title = "House prices in Seattle") 
+
+
+# With facet
+ggplot(house_prices_l, aes(x = log10_size, y = log10_price, col = condition)) + 
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) + geom_vline(xintercept = 3.38 , col = "red" , tly = 2)  +
+  labs(y = "log10 price" ,
+       x = "log10 size",
+       title = "House prices in Seattle") +
+facet_wrap(~ condition)
+```
+
+Eyeballing it, it seems the predicted log10_price seems to be around 5.75. Let’s now obtain the exact numerical value for the prediction using the equation of the regression line for the condition = 5 houses, being sure to log10() the square footage first.
+```{r}
+2.45 + 1 * log10(1900)
+```
+
+This value is very close to our earlier visually made prediction of 5.75. But wait! Is our prediction for the price of this house $5.75 ? No! Remember that we are using log10_price as our outcome variable! So, if we want a prediction in dollar units of price, we need to unlog this by taking a power of 10 .
+```{r}
+10^(2.45 + 1 * log10(1900))
+```
+
+**(LC 11.1)** Prediction making we just did on the house of condition 5 and size 1900 square feet. Show that it’s $524,807!
+```{r}
+house_prices_l <- house_prices %>%
+  mutate(
+    log10_price = log10(price),
+    log10_size = log10(sqft_living)
+  )
+# Fit regression model:
+price_interaction <- lm(log10_price ~ log10_size + condition,
+  data = house_prices_l)
+
+# Get regression table:
+get_regression_table(price_interaction)
+
+10^(2.88 + 0.096 + 0.837 * log10(1900))
+```
+
+**Complete**
+
+
